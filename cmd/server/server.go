@@ -1,21 +1,29 @@
 package main
 
 import (
-	"bible-verse-generator/internal/db"
-	"bible-verse-generator/internal/object"
-	"bible-verse-generator/internal/verse"
+	"flag"
 	"log"
 	"net/http"
+	"verse-cli/internal/db"
+	"verse-cli/internal/object"
+	"verse-cli/internal/ui"
+	"verse-cli/internal/verse"
 
 	"github.com/caarlos0/env/v10"
 	"github.com/go-chi/chi/v5"
 	"github.com/joho/godotenv"
 )
 
-func apiRouter(r chi.Router) {
+var ServerPort *string
+
+func parseFlags() {
+	ServerPort = flag.String("port", "8080", "port to run server on")
+	flag.Parse()
 }
 
 func main() {
+	parseFlags()
+
 	godotenv.Load()
 	conf := &object.Config{}
 	err := env.ParseWithOptions(conf, env.Options{
@@ -28,19 +36,20 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	verseRepo := verse.NewDBRepo(db)
-	verseController := verse.NewController(verseRepo)
 
 	r := chi.NewRouter()
-	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		http.FileServer(http.Dir("template")).ServeHTTP(w, r)
-	})
+
 	r.Route("/api", func(r chi.Router) {
-		for _, route := range verseController.Routes {
-			r.MethodFunc(route.Method, route.Path, route.HandlerFn)
-		}
+		verseRepo := verse.NewDBRepo(db)
+		verseController := verse.NewController(verseRepo)
+		verseController.Route(r)
 	})
 
-	log.Println("Listening on :8080")
-	http.ListenAndServe(":8080", r)
+	r.Route("/", func(r chi.Router) {
+		uiController := ui.NewController()
+		uiController.Route(r)
+	})
+
+	log.Printf("Listening on :%s\n", *ServerPort)
+	http.ListenAndServe(":"+*ServerPort, r)
 }

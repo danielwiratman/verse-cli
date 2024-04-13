@@ -1,4 +1,4 @@
-module bible-verse-generator
+module verse-cli
 
 go 1.22.2
 

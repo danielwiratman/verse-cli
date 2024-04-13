@@ -1,9 +1,9 @@
 package db
 
 import (
-	"bible-verse-generator/internal/object"
 	"database/sql"
 	"fmt"
+	"verse-cli/internal/object"
 
 	_ "github.com/lib/pq"
 )

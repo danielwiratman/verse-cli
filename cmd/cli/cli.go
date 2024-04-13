@@ -1,14 +1,14 @@
 package main
 
 import (
-	"bible-verse-generator/internal/db"
-	"bible-verse-generator/internal/object"
-	"bible-verse-generator/internal/util"
-	"bible-verse-generator/internal/verse"
 	"fmt"
 	"log"
 	"strings"
 	"time"
+	"verse-cli/internal/db"
+	"verse-cli/internal/object"
+	"verse-cli/internal/util"
+	"verse-cli/internal/verse"
 
 	"github.com/apatters/go-wordwrap"
 	"github.com/caarlos0/env/v10"
@@ -51,7 +51,9 @@ func main() {
 	}
 
 	verseRepo := verse.NewDBRepo(db)
-	verse, err := verseRepo.GetRandomVerse()
+	verseService := verse.NewService(verseRepo)
+
+	verse, err := verseService.GetRandomVerse()
 	if err != nil {
 		log.Fatal(err)
 	}
